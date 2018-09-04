@@ -63,4 +63,4 @@ for(file in 1:length(file_list)){
 ed <- proc.time()
 
 print(ed-st)
-write.csv(file_id_mst, paste0(out_path, "mst_file_id.csv"), row.names = F, quote = F, fileEncoding = "UTF-8")
+write.csv(file_id_mst, paste0(out_path, "mst_file_id_", format(Sys.time(), "%Y/%m/%d %H:%M:%OS"), ".csv"), row.names = F, quote = F, fileEncoding = "UTF-8")
