@@ -4,14 +4,14 @@ library(stringr)
 
 options(digits = 20)
 
-data_path <- "./nox_data/"
+data_path <- "./nox_data/201704-201801/"
 in_path <- "./in/"
 out_path <- "./out/"
 
-fullpath_file_list <- list.files(data_path, recursive = T) 
+fullpath_file_list <- list.files(data_path, pattern = "csv", recursive = T) 
 
 file_list <- str_split(fullpath_file_list, "/", simplify = T)
-file_list <- fullpath_file_list[,5]
+file_list <- paste0(file_list[,5], file_list[,6])
 
 # file_idは続きから設定
 file_id <- 59
@@ -36,7 +36,7 @@ for(file in 1:length(file_list)){
   row_num <- end_row - start_row + 1
   
   tmp_df <- data.frame(FILE_ID=rep(file_id,row_num))
-  tmp_file_mst <- data.frame(FILE_ID=file_id, FILE_NAME=file_list[file])
+  tmp_file_mst <- data.frame(FILE_ID=file_id, FILE_NAME=fullpath_file_list[file])
   
   tmp_label_list <- tmp_data[header_row,] %>% t() %>% na.omit() %>% as.vector()
   
@@ -63,4 +63,4 @@ for(file in 1:length(file_list)){
 ed <- proc.time()
 
 print(ed-st)
-write.csv(file_id_mst, paste0(out_path, "mst_file_id_", format(Sys.time(), "%Y/%m/%d %H:%M:%OS"), ".csv"), row.names = F, quote = F, fileEncoding = "UTF-8")
+write.csv(file_id_mst, paste0(out_path, "mst_file_id_", format(Sys.time(), "%Y-%m-%d-%H-%M-%OS"), ".csv"), row.names = F, quote = F, fileEncoding = "UTF-8")
