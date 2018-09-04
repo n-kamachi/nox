@@ -1,21 +1,25 @@
 library(data.table)
 library(dplyr)
+library(stringr)
 
 options(digits = 20)
 
-data_path <- "./add_data/"
+data_path <- "./nox_data/"
 in_path <- "./in/"
 out_path <- "./out/"
 
-file_list <- list.files(data_path)
+fullpath_file_list <- list.files(data_path, recursive = T) 
+
+file_list <- str_split(fullpath_file_list, "/", simplify = T)
+file_list <- fullpath_file_list[,5]
 
 # file_idは続きから設定
-file_id <- 58
+file_id <- 59
 file_id_mst <- NULL
 
 st <- proc.time()
 for(file in 1:length(file_list)){
-  tmp_data <- fread(paste0(data_path,file_list[file]), header = F, sep = ",", data.table = F)
+  tmp_data <- fread(paste0(data_path, fullpath_file_list[file]), header = F, sep = ",", data.table = F)
   
   header_row <- charmatch("時間",tmp_data[,1])
   start_row <- header_row + 2
