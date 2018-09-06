@@ -42,8 +42,20 @@ for(file in 1:length(file_list)){
   start_na_col <- 51
   end_na_col <- 52
   
+  tmp_com_label <- tmp_data[header_row, 1:length(com_label)] %>% t() %>% as.vector()
+  
+  upd_com_label <- NULL
+  for(i in 1:length(com_label)){
+    if(tmp_com_label[i] == com_label[i]){
+      upd_com_label <- c(upd_com_label, com_label[i])
+    }
+    else{
+      upd_com_label <- c(upd_com_label, paste0(com_label[i],tmp_com_label[i]))
+    }
+  }
+  
   tmp_label_list <- tmp_data[header_row,(end_na_col+1):ncol(tmp_data)] %>% t() %>% na.omit() %>% as.vector()
-  tmp_label_list <- c(com_label, tmp_label_list)
+  tmp_label_list <- c(upd_com_label, tmp_label_list)
   
   tmp_ts_data <- tmp_data[start_row:end_row,] %>% sapply(as.numeric)
   
