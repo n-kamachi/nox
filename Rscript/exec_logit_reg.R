@@ -86,7 +86,7 @@ create_gg_in <- function(){
 res_out <- create_gg_in()
 res_out$VAR_ID %>% as.vector() %>% unique() -> var_id
 
-y_upper <- 26L
+y_upper <- 21L
 y_lower <- -1 * y_upper
 
 for(i in var_id){
@@ -106,7 +106,7 @@ for(i in var_id){
     geom_point() +
     theme(axis.text.x = element_text(size=10)) +
     #theme_gray(base_family = "HiraKakuPro-W3") + 
-    ggtitle(paste0("T値_", res_i$VAR)) +
+    ggtitle(paste0("単変量ロジスティック回帰 T値 ", res_i$VAR)) +
     theme(plot.title = element_text(hjust = 0.5)) +
     xlab("集約範囲") +
     ylab("T値") + 

@@ -76,7 +76,7 @@ for(i in var_id){
     geom_point() +
     theme(axis.text.x = element_text(size=10)) +
     #theme_gray(base_family = "HiraKakuPro-W3") + 
-    ggtitle(paste0("T値_", df_i$VAR)) +
+    ggtitle(paste0("単変量線形回帰 T値 ", df_i$VAR)) +
     theme(plot.title = element_text(hjust = 0.5)) +
     xlab("集約範囲") +
     ylab("T値") + 
