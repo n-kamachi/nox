@@ -14,7 +14,7 @@ PASSWORD <- "***"
 con <- odbcConnect(DSN, USERID, PASSWORD)
 
 #con <- dbConnect(drv = todbc(),
-#                 driver = "C:/`Program Files`/Teradata/Client/16.10/bin/TDATA32.DLL",
+#                 driver = "C:/Program Files/Teradata/Client/16.10/bin/TDATA32.DLL",
 #                 DBCName = "153.65.169.70",
 #                 #dsn = DSN,
 #                 uid = USERID,
@@ -56,7 +56,7 @@ create_gg_in <- function(){
 df <- create_gg_in()
 df$VAR_ID %>% as.vector() %>% unique() -> var_id
 
-y_upper <- 25L
+y_upper <- 26L
 y_lower <- -1 * y_upper
 
 for(i in var_id){
