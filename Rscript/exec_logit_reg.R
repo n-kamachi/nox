@@ -104,7 +104,7 @@ for(i in var_id){
   g <- ggplot(data = res_i, aes(x = block, y = Z_VALUE, group = 1)) +
     geom_line() +
     geom_point() +
-    theme(axis.text.x = element_text(size=8)) +
+    theme(axis.text.x = element_text(size=10)) +
     #theme_gray(base_family = "HiraKakuPro-W3") + 
     ggtitle(paste0("T値_", res_i$VAR)) +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -118,8 +118,8 @@ for(i in var_id){
     filename = sprintf("./logit_graph/t_value_%s.png", res_i$VAR),
     device = "png",
     plot = g,
-    width = 9.8,
-    height = 4.5
+    width = 10.2,
+    height = 4.6
   )
   
 }
