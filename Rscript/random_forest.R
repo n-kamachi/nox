@@ -4,6 +4,8 @@ library(inTrees)
 library(RODBC)
 #library(dplyr.teradata)
 library(foreach)
+library(data.table)
+
 set.seed(123)
 
 DSN <- "***"
@@ -88,7 +90,7 @@ count_vars_stage <- function(rf = rf){
 main <- function(){
   
   rf <- compute_rf()
-  show_var_importance(rf) %>% save.image("./out/randomforest/var_imp.png")
+  show_var_importance(rf) %>% write.csv("./out/randomforest/var_imp.csv")
   res <- count_vars_stage(rf) %>% write_csv("./out/randomforest/var_cnts.csv")
   
 }
