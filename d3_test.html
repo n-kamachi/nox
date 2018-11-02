@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>d3test</title>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+<style type="text/css">
+
+</style>
+<script type="text/javascript">
+    var width = 1200;
+    var height = 800;
+    // nodeの定義。ここを増やすと楽しい。
+    var nodes = [
+      {
+        "label": "[+]吸入空気量相当（0.4 - 0.6秒前）",
+        "odds_rate": 1.1863,
+        "node_prov": 0.2184,
+        "group": "cluster-08",
+        "id": 0
+      },
+      {
+        "label": "[+]vQM（0.4 - 0.6秒前）",
+        "odds_rate": 1.1809,
+        "node_prov": 0.2177,
+        "group": "cluster-08",
+        "id": 1
+      },
+      {
+        "label": "[+]燃料噴射量相当（0.1秒前）",
+        "odds_rate": 1.1615,
+        "node_prov": 0.2149,
+        "group": "cluster-08",
+        "id": 2
+      },
+      {
+        "label": "[+]燃料噴射量相当（0.7 - 1.1秒前）",
+        "odds_rate": 1.0877,
+        "node_prov": 0.204,
+        "group": "cluster-10",
+        "id": 3
+      },
+      {
+        "label": "[+]vAFSAF[0]（1.2 - 1.9秒前）",
+        "odds_rate": 1.079,
+        "node_prov": 0.2027,
+        "group": "cluster-10",
+        "id": 4
+      },
+      {
+        "label": "[+]吸入空気量相当（8.8 - 14.2秒前）",
+        "odds_rate": 1.0719,
+        "node_prov": 0.2016,
+        "group": "cluster-10",
+        "id": 5
+      },
+      {
+        "label": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "odds_rate": 1.5747,
+        "node_prov": 0.2706,
+        "group": "cluster-12",
+        "id": 6
+      },
+      {
+        "label": "[+]vFHOSB[0]（5.4 - 8.7秒前）",
+        "odds_rate": 1.4814,
+        "node_prov": 0.2587,
+        "group": "cluster-13",
+        "id": 7
+      },
+      {
+        "label": "[+]vFHOSB[0]（8.8 - 14.2秒前）",
+        "odds_rate": 1.356,
+        "node_prov": 0.2421,
+        "group": "cluster-13",
+        "id": 8
+      },
+      {
+        "label": "[+]吸入空気量相当（0.2 - 0.3秒前）",
+        "odds_rate": 1.3122,
+        "node_prov": 0.2362,
+        "group": "cluster-14",
+        "id": 9
+      },
+      {
+        "label": "[+]vQM（0.1秒前）",
+        "odds_rate": 1.2788,
+        "node_prov": 0.2315,
+        "group": "cluster-14",
+        "id": 10
+      },
+      {
+        "label": "[-]bvTFBYA_bios（0.7 - 1.1秒前）",
+        "odds_rate": 1.2475,
+        "node_prov": 0.2272,
+        "group": "cluster-21",
+        "id": 11
+      },
+      {
+        "label": "[-]実噴射当量比（0.7 - 1.1秒前）",
+        "odds_rate": 1.2412,
+        "node_prov": 0.2263,
+        "group": "cluster-21",
+        "id": 12
+      },
+      {
+        "label": "[-]床右入口温度（1.2 - 1.9秒前）",
+        "odds_rate": 1.2155,
+        "node_prov": 0.2226,
+        "group": "cluster-21",
+        "id": 13
+      },
+      {
+        "label": "[-]vVSP（8.8 - 14.2秒前）",
+        "odds_rate": 1.1681,
+        "node_prov": 0.2158,
+        "group": "cluster-21",
+        "id": 14
+      },
+      {
+        "label": "[-]FNRPM（14.3 - 20.0秒前）",
+        "odds_rate": 1.156,
+        "node_prov": 0.2141,
+        "group": "cluster-21",
+        "id": 15
+      },
+      {
+        "label": "[-]vRO2HDTY[0]（1.2 - 1.9秒前）",
+        "odds_rate": 1.119,
+        "node_prov": 0.2086,
+        "group": "cluster-21",
+        "id": 16
+      },
+      {
+        "label": "[-]vVRO2[0]（0.2 - 0.3秒前）",
+        "odds_rate": 1.3855,
+        "node_prov": 0.2461,
+        "group": "cluster-24",
+        "id": 17
+      },
+      {
+        "label": "[-]vTITM（1.2 - 1.9秒前）",
+        "odds_rate": 1.3775,
+        "node_prov": 0.245,
+        "group": "cluster-24",
+        "id": 18
+      },
+      {
+        "label": "[-]床右BET温度（3.3 - 5.3秒前）",
+        "odds_rate": 1.1517,
+        "node_prov": 0.2134,
+        "group": "cluster-28",
+        "id": 19
+      },
+      {
+        "label": "[-]vRO2HDTY[0]（2.0 - 3.2秒前）",
+        "odds_rate": 1.2482,
+        "node_prov": 0.2272,
+        "group": "cluster-31",
+        "id": 20
+      }
+    ];
+
+    // node同士の紐付け設定。実用の際は、ここをどう作るかが難しいのかも。
+    var links = [
+      {
+        "label1": "[-]vTITM（1.2 - 1.9秒前）",
+        "label2": "[-]FNRPM（14.3 - 20.0秒前）",
+        "source": 18,
+        "target": 15,
+        "odds_value": 1.1855,
+        "link_prov": 0.3078
+      },
+      {
+        "label1": "[-]vRO2HDTY[0]（2.0 - 3.2秒前）",
+        "label2": "[-]vTITM（1.2 - 1.9秒前）",
+        "source": 20,
+        "target": 18,
+        "odds_value": 1.1542,
+        "link_prov": 0.3186
+      },
+      {
+        "label1": "[+]vAFSAF[0]（1.2 - 1.9秒前）",
+        "label2": "[-]vTITM（1.2 - 1.9秒前）",
+        "source": 4,
+        "target": 18,
+        "odds_value": 1.2421,
+        "link_prov": 0.3031
+      },
+      {
+        "label1": "[+]vQM（0.4 - 0.6秒前）",
+        "label2": "[-]vTITM（1.2 - 1.9秒前）",
+        "source": 1,
+        "target": 18,
+        "odds_value": 1.2463,
+        "link_prov": 0.3233
+      },
+      {
+        "label1": "[+]vAFSAF[0]（1.2 - 1.9秒前）",
+        "label2": "[-]vVRO2[0]（0.2 - 0.3秒前）",
+        "source": 4,
+        "target": 17,
+        "odds_value": 1.1608,
+        "link_prov": 0.2902
+      },
+      {
+        "label1": "[-]vVSP（8.8 - 14.2秒前）",
+        "label2": "[-]vVRO2[0]（0.2 - 0.3秒前）",
+        "source": 14,
+        "target": 17,
+        "odds_value": 1.5343,
+        "link_prov": 0.3691
+      },
+      {
+        "label1": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "label2": "[-]vVSP（8.8 - 14.2秒前）",
+        "source": 6,
+        "target": 14,
+        "odds_value": 1.429,
+        "link_prov": 0.3824
+      },
+      {
+        "label1": "[+]vFHOSB[0]（5.4 - 8.7秒前）",
+        "label2": "[-]vVSP（8.8 - 14.2秒前）",
+        "source": 7,
+        "target": 14,
+        "odds_value": 1.2724,
+        "link_prov": 0.3416
+      },
+      {
+        "label1": "[-]vRO2HDTY[0]（1.2 - 1.9秒前）",
+        "label2": "[-]実噴射当量比（0.7 - 1.1秒前）",
+        "source": 16,
+        "target": 12,
+        "odds_value": 1.1691,
+        "link_prov": 0.2767
+      },
+      {
+        "label1": "[+]vAFSAF[0]（1.2 - 1.9秒前）",
+        "label2": "[-]床右BET温度（3.3 - 5.3秒前）",
+        "source": 4,
+        "target": 19,
+        "odds_value": 1.2829,
+        "link_prov": 0.273
+      },
+      {
+        "label1": "[-]bvTFBYA_bios（0.7 - 1.1秒前）",
+        "label2": "[-]床右入口温度（1.2 - 1.9秒前）",
+        "source": 11,
+        "target": 13,
+        "odds_value": 1.1589,
+        "link_prov": 0.2928
+      },
+      {
+        "label1": "[+]vAFSAF[0]（1.2 - 1.9秒前）",
+        "label2": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "source": 4,
+        "target": 6,
+        "odds_value": 1.3495,
+        "link_prov": 0.3507
+      },
+      {
+        "label1": "[-]bvTFBYA_bios（0.7 - 1.1秒前）",
+        "label2": "[+]vFHOSB[0]（5.4 - 8.7秒前）",
+        "source": 11,
+        "target": 7,
+        "odds_value": 1.2248,
+        "link_prov": 0.3478
+      },
+      {
+        "label1": "[+]vAFSAF[0]（1.2 - 1.9秒前）",
+        "label2": "[+]vFHOSB[0]（5.4 - 8.7秒前）",
+        "source": 4,
+        "target": 7,
+        "odds_value": 1.2424,
+        "link_prov": 0.3187
+      },
+      {
+        "label1": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "label2": "[+]vQM（0.1秒前）",
+        "source": 6,
+        "target": 10,
+        "odds_value": 1.3473,
+        "link_prov": 0.39
+      },
+      {
+        "label1": "[+]vFHOSB[0]（5.4 - 8.7秒前）",
+        "label2": "[+]vQM（0.1秒前）",
+        "source": 7,
+        "target": 10,
+        "odds_value": 1.2527,
+        "link_prov": 0.3586
+      },
+      {
+        "label1": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "label2": "[+]vQM（0.4 - 0.6秒前）",
+        "source": 6,
+        "target": 1,
+        "odds_value": 1.2589,
+        "link_prov": 0.3555
+      },
+      {
+        "label1": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "label2": "[+]吸入空気量相当（0.2 - 0.3秒前）",
+        "source": 6,
+        "target": 9,
+        "odds_value": 1.1964,
+        "link_prov": 0.3681
+      },
+      {
+        "label1": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "label2": "[+]吸入空気量相当（0.4 - 0.6秒前）",
+        "source": 6,
+        "target": 0,
+        "odds_value": 1.1708,
+        "link_prov": 0.3401
+      },
+      {
+        "label1": "[-]vRO2HDTY[0]（1.2 - 1.9秒前）",
+        "label2": "[+]吸入空気量相当（8.8 - 14.2秒前）",
+        "source": 16,
+        "target": 5,
+        "odds_value": 1.1872,
+        "link_prov": 0.2512
+      },
+      {
+        "label1": "[-]実噴射当量比（0.7 - 1.1秒前）",
+        "label2": "[+]燃料噴射量相当（0.1秒前）",
+        "source": 12,
+        "target": 2,
+        "odds_value": 1.1584,
+        "link_prov": 0.2824
+      },
+      {
+        "label1": "[+]vFHOSB[0]（3.3 - 5.3秒前）",
+        "label2": "[+]燃料噴射量相当（0.1秒前）",
+        "source": 6,
+        "target": 2,
+        "odds_value": 1.2753,
+        "link_prov": 0.3546
+      },
+      {
+        "label1": "[+]vFHOSB[0]（8.8 - 14.2秒前）",
+        "label2": "[+]燃料噴射量相当（0.7 - 1.1秒前）",
+        "source": 8,
+        "target": 3,
+        "odds_value": 1.1774,
+        "link_prov": 0.2903
+      }
+    ];
+    // forceLayout自体の設定はここ。ここをいじると楽しい。
+    var force = d3.layout.force()
+        .nodes(nodes)
+        .links(links)
+        .size([width, height])
+        .distance(140) // node同士の距離
+        .friction(0.7) // 摩擦力(加速度)的なものらしい。
+        .charge(-30) // 寄っていこうとする力。推進力(反発力)というらしい。
+        .gravity(0.01) // 画面の中央に引っ張る力。引力。
+        .start();
+
+    // svg領域の作成
+    var svg = d3.select("body")
+        .append("svg")
+        .attr({width:width, height:height});
+
+    // link線の描画(svgのline描画機能を利用)
+    var link = svg.selectAll("line")
+        .data(links)
+        .enter()
+        .append("line")
+        .style({stroke: "#ccc", "stroke-width": function(data) { return Math.exp((data.odds_value * 5)) / 100 ;} });
+        ;
+
+    // nodesの描画(今回はsvgの円描画機能を利用)
+    var node = svg.selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr({ r: function(data) {return Math.exp((data.odds_rate * 10)^2) / 100000 + 10;} })
+        .style({ fill: "orange" })
+        .call(force.drag);
+
+    // nodeのラベル周りの設定
+    var label = svg.selectAll('text')
+        .data(nodes)
+        .enter()
+        .append('text')
+        .attr({
+            "text-anchor":"right",
+            "fill":"gray",
+            "font-size": "12px"
+        })
+        .text(function(data) { return data.label; });
+
+    // tickイベント(力学計算が起こるたびに呼ばれるらしいので、座標追従などはここで)
+    force.on("tick", function() {
+        link.attr({
+            x1: function(data) { return data.source.x;},
+            y1: function(data) { return data.source.y;},
+            x2: function(data) { return data.target.x;},
+            y2: function(data) { return data.target.y;}
+        });
+        node.attr({
+            cx: function(data) { return data.x;},
+            cy: function(data) { return data.y;}
+        });
+        // labelも追随するように
+        label.attr({
+            x: function(data) { return data.x;},
+            y: function(data) { return data.y;}
+        });
+    });
+
+</script>
+
+</body>
+</html>
