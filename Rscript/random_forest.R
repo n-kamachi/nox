@@ -1,65 +1,82 @@
 library(tidyverse)
 library(randomForest)
 library(inTrees)
-library(RODBC)
-#library(dplyr.teradata)
+library(dplyr.teradata)
 library(foreach)
 library(data.table)
-
-set.seed(123)
-
-DSN <- "***"
-USERID <- "***"
-PASSWORD <- "***"
-
-# ODBC接続 to TERADATA
-con <- odbcConnect(DSN, USERID, PASSWORD)
+set.seed(123) # Set seed as random forest use random variable which affects random forest result
 
 
-compute_rf <- function(in_schema = "nissan", in_tbl = "NOX_ADS_RANDOM_FOREST"){
+con <- dbConnect(
+  todbc(),
+  driver = "/Library/Application Support/teradata/client/16.10/lib/tdata.dylib",
+  DBCName = "153.65.169.70",
+  uid = "****",
+  pwd = "****",
+  charset = "UTF8"
+  )
+
+
+compute_rf <- function(in_schema = "nissan", in_tbl = "NOX_ADS_RANDOM_FOREST", ntry = 1000L){
   
   #' @description 
   #' Compute RandomForest from td table.
 
   tbl_name <- paste(in_schema, in_tbl, sep = ".")
   
-  in_df <- sqlFetch(con, tbl_name) %>% select(-RES_ID) %>% collect() %>% as_tibble()
+  in_df <- tbl(con, tbl_name) %>%
+    select(-RES_ID) %>%
+    collect() %>% # Load table from TD
+    as_tibble() %>% 
+    mutate(OBJ_VAL = as.factor(OBJ_VAL)) # Random forest function calls classifier when type of object variable is factor. Otherwise it calls regressor.
   
-  rf <- randomForest(OBJ_VAL~., in_df, importance=T)
+  rf <- randomForest(
+    OBJ_VAL~., # Formula
+    in_df, # data
+    importance=T,
+    do.trace=T, # If true, we can see the progress of random forest
+    ntree=ntry
+    )
   
   return(rf)
   
 }
 
 
-show_var_importance <- function(rf){
-  # Draw variable importance
-  rf %>% varImpPlot() -> imp
-  return(imp)
-  
-}
-
 count_vars_stage <- function(rf = rf){
   
+  #' @description 
+  #' Function to get the information which variables are used in random forest 
+  #' Variable combination is flatten
+  
+  # Get number of trees
   k <- rf$ntree
   
   create_var_comb <- function(rf, i){
     
+    # 各決定木の情報取得
     rf %>% 
       getTree(k = i, labelVar = TRUE) %>% 
       data.table() %>% 
       setnames(c("left", "right", "var", "point", "status", "prediction")) -> tree
     
-    df_null <- data_frame(left = 0, right = 0, var = NA, point = 0, status = -1, prediction = "No")
-    
+    # 第1分岐
     top <- tree[1]
+    
+    # 第2分岐
     second_l <- tree[top$left]
     second_r <- tree[top$right]
+    
+    # 第3分岐
     third_ll <- tree[second_l$left]
     third_lr <- tree[second_l$right]
     third_rl <- tree[second_r$left]
     third_rr <- tree[second_r$right]
     
+    # 決定木が前で切れていた場合に挿入する情報
+    df_null <- data_frame(left = 0, right = 0, var = NA, point = 0, status = -1, prediction = "No")
+    
+    # 決定木が降りてきていなかった場合の対応
     if(nrow(third_ll) == 0L) third_ll <- df_null
     if(nrow(third_lr) == 0L) third_lr <- df_null
     if(nrow(third_rl) == 0L) third_rl <- df_null
@@ -75,13 +92,10 @@ count_vars_stage <- function(rf = rf){
     return(df_i)
   }
   
-  
-  res <- foreach(i = 1:k, .combine = union_all) %do% {
+  # For文で回す(foreachのほうが結果を貯めるオブジェクト準備しなくていいので簡単, dplyr::bind_rowsはrbindの高速版)
+  res <- foreach(i = 1:k, .combine = bind_rows) %do% {
     create_var_comb(rf, i)
-  } %>%
-    group_by(var1, var2, var3) %>%
-    dplyr::summarise(cnt = n()) %>%
-    arrange(desc(cnt))
+  } 
   
   return(res)
 }
@@ -90,9 +104,9 @@ count_vars_stage <- function(rf = rf){
 main <- function(){
   
   rf <- compute_rf()
-  show_var_importance(rf) %>% write.csv("./out/randomforest/var_imp.csv")
-  res <- count_vars_stage(rf) %>% write_csv("./out/randomforest/var_cnts.csv")
+  res <- count_vars_stage(rf) %>% write_csv("var_cnts_1000.csv")
   
 }
+
   
 main()
